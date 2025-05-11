@@ -1,0 +1,1 @@
+export const tiposAvalicaoResposta = ['auto_avaliacao', 'supervisor', 'subcomissao', 'parecer_conclusivo']
