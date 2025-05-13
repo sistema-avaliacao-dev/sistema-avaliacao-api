@@ -15,7 +15,7 @@ export interface ServidorAttributes {
   cpf: string
   matricula: string
   nome: string
-  email?: string
+  // email?: string
   cargo_id: number
   lotacao: string
   grau_instrucao: string
@@ -75,11 +75,11 @@ export default class Servidor extends Model<
   })
   declare nome: string;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true
-  })
-  declare email: string;
+  // @Column({
+  //   type: DataType.STRING,
+  //   allowNull: true
+  // })
+  // declare email: string;
   
   @Column({
     type: DataType.INTEGER,

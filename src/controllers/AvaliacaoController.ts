@@ -8,6 +8,8 @@ import SubcomissaoAlvo from "../database/models/SubcomissaoAlvo";
 import ComissaoAlvo from "../database/models/ComissaoAlvo";
 import HttpError from "../utils/HttpError";
 import AvaliacaoService from "../services/AvaliacaoService";
+import SubcomissaoServidor from "../database/models/SubcomissaoServidor";
+import ComissaoServidor from "../database/models/ComissaoServidor";
 
 class AvaliacaoController {
     async create(req: Request, res: Response) {
@@ -30,10 +32,10 @@ class AvaliacaoController {
                     return
                 }
 
-                if (!servidor.email) {
-                    ResponseHandler(res, 400, `Servidor ${servidor.nome} não tem email cadastrado, cadastre o email do servidor antes de dar início a sua avaliação!`)
-                    return
-                }
+                // if (!servidor.email) {
+                //     ResponseHandler(res, 400, `Servidor ${servidor.nome} não tem email cadastrado, cadastre o email do servidor antes de dar início a sua avaliação!`)
+                //     return
+                // }
 
                 if (!servidor.chefia_imediata_servidores_id) {
                     ResponseHandler(res, 400, `Servidor ${servidor.nome} não tem chefia imediata cadastrada, cadastre a chefia imediata do servidor antes de dar início a sua avaliação!`)
@@ -58,8 +60,26 @@ class AvaliacaoController {
                     return
                 }
 
+                const chefia = await Servidor.findOne({ where: { id: servidor.chefia_imediata_servidores_id } })
+                const subcomissao_participantes_table = await SubcomissaoServidor.findAll({ where: { subcomissoes_avaliadoras_id: has_subcomissao.subcomissoes_avaliadoras_id } })
+                const subcomissao_participantes = await Promise.all(
+                    subcomissao_participantes_table.map(async (m: any) => {
+                        const servidor = await Servidor.findOne({ where: { id: m.servidores_id } })
+                        return servidor
+                    })
+                )
+                const comissao_participantes_table = await ComissaoServidor.findAll({ where: { comissoes_avaliadoras_id: has_comissao.comissoes_avaliadoras_id } })
+                const comissao_participantes = await Promise.all(
+                    comissao_participantes_table.map(async (m: any) => {
+                        const servidor = await Servidor.findOne({ where: { id: m.servidores_id } })
+                        return servidor
+                    })
+                )
                 await Avaliacao.create({
-                    servidores_id: servidor_id
+                    servidores_id: servidor_id,
+                    subcomissao_snapshot: subcomissao_participantes,
+                    chefia_snapshot: chefia,
+                    comissao_snapshot: comissao_participantes
                 }, { transaction })
 
                 await transaction.commit();
@@ -99,7 +119,7 @@ class AvaliacaoController {
         }
     }
 
-    async getBySubcomissao(req: Request,res: Response){
+    async getBySubcomissao(req: Request, res: Response) {
         try {
             const subcomissao_id: number = parseInt(req.query.subcomissao_id?.toString())
 
@@ -117,7 +137,7 @@ class AvaliacaoController {
         }
     }
 
-    async getByComissao(req: Request,res: Response){
+    async getByComissao(req: Request, res: Response) {
         try {
             const comissao_id: number = parseInt(req.query.comissao_id?.toString())
 

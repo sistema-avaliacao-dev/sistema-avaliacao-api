@@ -6,3 +6,4 @@ export const userRoutes = Router();
 
 userRoutes.post('/', Auth.checkToken, Auth.isAdmin, UserController.create)
 userRoutes.get('/', Auth.checkToken, UserController.getUser)
+userRoutes.put('/password', Auth.checkToken, UserController.updatePassword)

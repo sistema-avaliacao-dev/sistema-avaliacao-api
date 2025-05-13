@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import ComissaoService from "../services/ComissaoService";
 import HttpError from "../utils/HttpError";
+import { ResponseHandler } from "../middlewares/ResponseHandler";
 
 export interface ComissaoGet {
     comissao: any,
@@ -95,6 +96,25 @@ class ComissaoController {
                     res.status(500).json({ message: (e as Error).message })
                 }
             }
+        }
+    }
+
+    async getComissaoParticipantesByServidor(req: Request, res: Response) {
+        try {
+            const servidor_id = parseInt(req.query.servidor_id as string);
+            if (!servidor_id) {
+                return ResponseHandler(res, 400, 'servidor_id é obrigatório');
+            }
+            const result = await ComissaoService.getComissaoAndParticipantesByServidor(servidor_id);
+            ResponseHandler(res, 200, 'Participantes da comissão recuperados!', result);
+        } catch (e) {
+            if (e instanceof HttpError) {
+                console.log(e)
+                ResponseHandler(res, e.statusCode, e.message);
+                return;
+            }
+            console.log(e)
+            ResponseHandler(res, 500, (e as Error).message);
         }
     }
 }

@@ -11,6 +11,6 @@ servidorRoutes.post('/', Auth.checkToken, Auth.isAdmin, upload.single("file"), S
 servidorRoutes.get('/', Auth.checkToken, ServidorController.get)
 servidorRoutes.get('/inferiores', Auth.checkToken, ServidorController.getInferiores)
 
-servidorRoutes.post('/email', Auth.checkToken, ServidorController.editEmail)
+// servidorRoutes.post('/email', Auth.checkToken, ServidorController.editEmail)
 
 servidorRoutes.post('/chefia', Auth.checkToken, ServidorController.setChefia)

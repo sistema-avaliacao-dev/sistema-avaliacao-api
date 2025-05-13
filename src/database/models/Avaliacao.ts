@@ -16,6 +16,7 @@ export interface AvaliacaoAttributes {
   data_fim: Date
   chefia_snapshot?: any;
   subcomissao_snapshot?: any;
+  comissao_snapshot?: any;
   createdAt: Date
   updatedAt: Date
 }
@@ -100,6 +101,12 @@ export default class Avaliacao extends Model<
     allowNull: true
   })
   declare subcomissao_snapshot: any;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: true
+  })
+  declare comissao_snapshot: any;
 
   @BelongsTo(() => Servidor, 'servidores_id')
   declare servidor: Servidor;

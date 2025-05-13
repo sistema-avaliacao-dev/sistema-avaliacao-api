@@ -6,7 +6,6 @@ import ComissaoAlvo from "../database/models/ComissaoAlvo";
 import ComissaoServidor from "../database/models/ComissaoServidor";
 import { ComissaoGet } from "../controllers/ComissaoController";
 import Servidor from "../database/models/Servidor";
-import Cargo from "../database/models/Cargos";
 
 interface ValidateParams {
     comissao_id?: number,
@@ -155,6 +154,27 @@ class ComissaoService {
                 throw new HttpError(500, (e as Error).message);
             }
         }
+    }
+
+    async getComissaoAndParticipantesByServidor(servidor_id: number) {
+        // Find the SubcomissaoAlvo for this servidor
+        const comissaoAlvo = await ComissaoAlvo.findOne({ where: { servidores_id: servidor_id } });
+        if (!comissaoAlvo) {
+            throw new Error('Nenhuma comissão avaliando este servidor.');
+        }
+        // Get the subcomissao info
+        const comissao = await Comissao.findByPk(comissaoAlvo.comissoes_avaliadoras_id);
+        // Get all participants (servidores) of this subcomissao
+        const comissaoServidores = await ComissaoServidor.findAll({ where: { comissoes_avaliadoras_id: comissaoAlvo.comissoes_avaliadoras_id } });
+        const servidorIds = comissaoServidores.map(ss => ss.servidores_id);
+        const participantes = await Servidor.findAll({
+            where: { id: servidorIds },
+            attributes: ['id', 'nome', 'matricula']
+        });
+        return {
+            comissao,
+            participantes
+        };
     }
 
     private async validate({ comissao_id, nome, nivel, is_update, is_delete, is_get, servidor_id }: ValidateParams) {

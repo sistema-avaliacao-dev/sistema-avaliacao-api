@@ -77,24 +77,9 @@ export default new class AvaliacaoService {
                         }
                     ]
                 })
-                // Buscar membros da comissão
-                let comissao = [];
-                if (avaliacao && avaliacao.servidores_id) {
-                  const ComissaoAlvo = require('../database/models/ComissaoAlvo').default;
-                  const ComissaoServidor = require('../database/models/ComissaoServidor').default;
-                  const Servidor = require('../database/models/Servidor').default;
-                  const comissaoAlvo = await ComissaoAlvo.findOne({ where: { servidores_id: avaliacao.servidores_id } });
-                  if (comissaoAlvo) {
-                    const comissaoServidores = await ComissaoServidor.findAll({
-                      where: { comissoes_avaliadoras_id: comissaoAlvo.comissoes_avaliadoras_id },
-                      include: [{ model: Servidor, attributes: ['id', 'nome', 'matricula', 'email'] }]
-                    });
-                    comissao = comissaoServidores.map((cs: any) => cs.servidor);
-                  }
-                }
+                
                 return {
-                  ...(avaliacao.toJSON ? avaliacao.toJSON() : avaliacao),
-                  comissao
+                  ...(avaliacao.toJSON ? avaliacao.toJSON() : avaliacao)
                 };
             } else {
                 avaliacao = await Avaliacao.findAll({

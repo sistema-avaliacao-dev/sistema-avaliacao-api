@@ -107,8 +107,18 @@ class ServidorService {
 
             const servidor: Servidor = await Servidor.findOne({ where: { users_id: servidor_id } })
 
-            const inferiores = await Servidor.findAll({ where: { chefia_imediata_servidores_id: servidor.id } })
-            
+            const inferiores = await Servidor.findAll({
+                where: {
+                    chefia_imediata_servidores_id: servidor.id
+                }, include: [
+                    {
+                        model: Cargo,
+                        as: 'cargo',
+                        attributes: ['id', 'nome']
+                    }
+                ]
+            })
+
             return inferiores
         } catch (e) {
             if (e) {

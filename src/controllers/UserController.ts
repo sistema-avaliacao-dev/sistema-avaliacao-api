@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { ResponseHandler } from "../middlewares/ResponseHandler";
 import User, { UserAttributes } from "../database/models/User";
 import passwordHash from "../utils/passwordHash";
+import passwordCompare from "../utils/passwordCompare";
 import { Transaction } from "sequelize";
 import sequelize from "../database/db";
 import HttpError from "../utils/HttpError";
@@ -83,6 +84,68 @@ class UserController {
             }
             console.log(e)
             ResponseHandler(res, 500, (e as Error).message);
+        }
+    }
+
+    async updatePassword(req: Request, res: Response) {
+        let transaction: Transaction;
+
+        try {
+            transaction = await sequelize.transaction();
+
+            const { currentPassword, newPassword } = req.body;
+            const token = req.headers.authorization?.replace('Bearer ', '');
+            const decoded = await getTokenDecoded(token);
+
+            // Validação de campos obrigatórios
+            if (!currentPassword) {
+                ResponseHandler(res, 400, "Senha atual é obrigatória");
+                return;
+            }
+            if (!newPassword) {
+                ResponseHandler(res, 400, "Nova senha é obrigatória");
+                return;
+            }
+
+            // Buscar usuário
+            const user = await User.findOne({ where: { id: decoded.dataValues.id } });
+            if (!user) {
+                ResponseHandler(res, 404, "Usuário não encontrado");
+                return;
+            }
+
+            // Validar senha atual
+            const passwordValid = await passwordCompare(currentPassword, user);
+            if (!passwordValid) {
+                ResponseHandler(res, 401, "Senha atual incorreta");
+                return;
+            }
+
+            // Validar se a nova senha é diferente da atual
+            const isSamePassword = await passwordCompare(newPassword, user);
+            if (isSamePassword) {
+                ResponseHandler(res, 400, "A nova senha deve ser diferente da senha atual");
+                return;
+            }
+
+            // Atualizar senha
+            const password_hash = await passwordHash(newPassword);
+            await user.update({ password_hash }, { transaction });
+
+            await transaction.commit();
+            ResponseHandler(res, 200, "Senha atualizada com sucesso");
+        } catch (e) {
+            if (transaction) {
+                await transaction.rollback();
+            }
+
+            if (e instanceof HttpError) {
+                console.log(e);
+                ResponseHandler(res, e.statusCode, e.message);
+                return;
+            }
+            console.log(e);
+            ResponseHandler(res, 500, "Erro ao atualizar senha");
         }
     }
 }

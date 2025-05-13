@@ -19,4 +19,6 @@ comissaoRoutes.post("/servidor", Auth.checkToken, Auth.isAdmin, ComissaoServidor
 comissaoRoutes.delete("/servidor", Auth.checkToken, Auth.isAdmin, ComissaoServidorController.delete);
 comissaoRoutes.get("/servidor", Auth.checkToken, ComissaoServidorController.get);
 
+comissaoRoutes.get("/servidor-participantes", Auth.checkToken, ComissaoController.getComissaoParticipantesByServidor);
+
 export default comissaoRoutes;

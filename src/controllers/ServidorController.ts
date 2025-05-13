@@ -155,57 +155,57 @@ class ServidorController {
         }
     }
 
-    async editEmail(req: Request, res: Response) {
-        let transaction: Transaction | null = null;
+    // async editEmail(req: Request, res: Response) {
+    //     let transaction: Transaction | null = null;
 
-        try {
-            transaction = await sequelize.transaction();
+    //     try {
+    //         transaction = await sequelize.transaction();
 
-            const servidor_id: number = req.body.servidor_id
-            const email: string = req.body.email
+    //         const servidor_id: number = req.body.servidor_id
+    //         const email: string = req.body.email
 
-            if (!servidor_id) {
-                console.log("Servidor não enviado");
-                ResponseHandler(res, 404, "Servidor não enviado, selecione um servidor para editar o email!");
-                return
-            }
+    //         if (!servidor_id) {
+    //             console.log("Servidor não enviado");
+    //             ResponseHandler(res, 404, "Servidor não enviado, selecione um servidor para editar o email!");
+    //             return
+    //         }
 
-            const servidor: Servidor = await Servidor.findOne({ where: { id: servidor_id } })
-            if (!servidor) {
-                console.log("Servidor não econtrado");
-                ResponseHandler(res, 404, "Servidor não encontrado, selecione um servidor cadastrado!");
-                return
-            }
+    //         const servidor: Servidor = await Servidor.findOne({ where: { id: servidor_id } })
+    //         if (!servidor) {
+    //             console.log("Servidor não econtrado");
+    //             ResponseHandler(res, 404, "Servidor não encontrado, selecione um servidor cadastrado!");
+    //             return
+    //         }
 
-            const emailIsValid: boolean = emailValidator.validate(email)
-            if (!emailIsValid) {
-                console.log("Email inválido");
-                ResponseHandler(res, 400, "Email inválido, informe um email válido!");
-                return
-            }
+    //         const emailIsValid: boolean = emailValidator.validate(email)
+    //         if (!emailIsValid) {
+    //             console.log("Email inválido");
+    //             ResponseHandler(res, 400, "Email inválido, informe um email válido!");
+    //             return
+    //         }
 
-            const emailInUse: Servidor = await Servidor.findOne({ where: { email: email, id: { [Op.ne]: servidor.id } } })
-            if (emailInUse) {
-                console.log("Email em uso");
-                ResponseHandler(res, 400, "O email informado ja está em uso por outro servidor!");
-                return
-            }
+    //         const emailInUse: Servidor = await Servidor.findOne({ where: { email: email, id: { [Op.ne]: servidor.id } } })
+    //         if (emailInUse) {
+    //             console.log("Email em uso");
+    //             ResponseHandler(res, 400, "O email informado ja está em uso por outro servidor!");
+    //             return
+    //         }
 
-            await servidor.update({ email: email }, {transaction})
+    //         await servidor.update({ email: email }, {transaction})
 
-            await transaction.commit();
-            ResponseHandler(res, 200, "Email editado!");
+    //         await transaction.commit();
+    //         ResponseHandler(res, 200, "Email editado!");
 
-        } catch (e) {
-            if (transaction) {
-                await transaction.rollback();
-            }
-            if (e) {
-                console.error(e);
-                ResponseHandler(res, 500, "Erro no servidor, contate o suporte!");
-            }
-        }
-    }
+    //     } catch (e) {
+    //         if (transaction) {
+    //             await transaction.rollback();
+    //         }
+    //         if (e) {
+    //             console.error(e);
+    //             ResponseHandler(res, 500, "Erro no servidor, contate o suporte!");
+    //         }
+    //     }
+    // }
 
     async getInferiores(req: Request, res: Response) {
         try {

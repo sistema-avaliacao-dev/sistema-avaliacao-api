@@ -19,9 +19,22 @@ import Cargo from './database/models/Cargos'
 const app = express()
 const port = process.env.PORT || 8080
 
-app.use(urlencoded())
+// Configuração do CORS
+const corsOptions = {
+  origin: [
+    'http://localhost:3000', // Desenvolvimento local
+    process.env.FRONTEND_URL, // URL do frontend em produção
+  ].filter(Boolean), // Remove valores undefined/null
+  credentials: true, // Permite cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // Cache das opções de preflight por 24 horas
+};
+
+app.use(cors(corsOptions))
 app.use(json())
-app.use(cors())
+app.use(urlencoded({ extended: true }))
 
 app.use("/user", userRoutes)
 app.use("/auth", authRoutes)
@@ -30,9 +43,6 @@ app.use("/cargo", cargoRoutes)
 app.use("/subcomissao", subcomissaoRoutes)
 app.use("/comissao", comissaoRoutes)
 app.use("/avaliacao", avaliacaoRoutes)
-
-
-
 
 app.listen(port, async () => {
     try {
