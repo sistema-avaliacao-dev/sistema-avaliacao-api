@@ -94,33 +94,34 @@ class UserController {
     }
     updatePassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             let transaction;
             try {
                 transaction = yield db_1.default.transaction();
-                const { currentPassword, newPassword } = req.body;
-                const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.replace('Bearer ', '');
-                const decoded = yield (0, getTokenDecoded_1.default)(token);
+                const { currentPassword, newPassword, role, userId } = req.body;
                 // Validação de campos obrigatórios
-                if (!currentPassword) {
-                    (0, ResponseHandler_1.ResponseHandler)(res, 400, "Senha atual é obrigatória");
-                    return;
+                if (role != 'admin') {
+                    if (!currentPassword) {
+                        (0, ResponseHandler_1.ResponseHandler)(res, 400, "Senha atual é obrigatória");
+                        return;
+                    }
                 }
                 if (!newPassword) {
                     (0, ResponseHandler_1.ResponseHandler)(res, 400, "Nova senha é obrigatória");
                     return;
                 }
                 // Buscar usuário
-                const user = yield User_1.default.findOne({ where: { id: decoded.dataValues.id } });
+                const user = yield User_1.default.findOne({ where: { id: userId } });
                 if (!user) {
                     (0, ResponseHandler_1.ResponseHandler)(res, 404, "Usuário não encontrado");
                     return;
                 }
                 // Validar senha atual
-                const passwordValid = yield (0, passwordCompare_1.default)(currentPassword, user);
-                if (!passwordValid) {
-                    (0, ResponseHandler_1.ResponseHandler)(res, 401, "Senha atual incorreta");
-                    return;
+                if (role != 'admin') {
+                    const passwordValid = yield (0, passwordCompare_1.default)(currentPassword, user);
+                    if (!passwordValid) {
+                        (0, ResponseHandler_1.ResponseHandler)(res, 401, "Senha atual incorreta");
+                        return;
+                    }
                 }
                 // Validar se a nova senha é diferente da atual
                 const isSamePassword = yield (0, passwordCompare_1.default)(newPassword, user);

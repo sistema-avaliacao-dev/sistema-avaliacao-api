@@ -93,32 +93,34 @@ class UserController {
         try {
             transaction = await sequelize.transaction();
 
-            const { currentPassword, newPassword } = req.body;
-            const token = req.headers.authorization?.replace('Bearer ', '');
-            const decoded = await getTokenDecoded(token);
-
+            const { currentPassword, newPassword, role, userId } = req.body;
             // Validação de campos obrigatórios
-            if (!currentPassword) {
-                ResponseHandler(res, 400, "Senha atual é obrigatória");
-                return;
+            if (role != 'admin') {
+                if (!currentPassword) {
+                    ResponseHandler(res, 400, "Senha atual é obrigatória");
+                    return;
+                }
             }
+
             if (!newPassword) {
                 ResponseHandler(res, 400, "Nova senha é obrigatória");
                 return;
             }
 
             // Buscar usuário
-            const user = await User.findOne({ where: { id: decoded.dataValues.id } });
+            const user = await User.findOne({ where: { id: userId } });
             if (!user) {
                 ResponseHandler(res, 404, "Usuário não encontrado");
                 return;
             }
 
             // Validar senha atual
-            const passwordValid = await passwordCompare(currentPassword, user);
-            if (!passwordValid) {
-                ResponseHandler(res, 401, "Senha atual incorreta");
-                return;
+            if (role != 'admin') {
+                const passwordValid = await passwordCompare(currentPassword, user);
+                if (!passwordValid) {
+                    ResponseHandler(res, 401, "Senha atual incorreta");
+                    return;
+                }
             }
 
             // Validar se a nova senha é diferente da atual
